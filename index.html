@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RECON-1 — Surveillance Robot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,100;0,300;0,400;0,700;0,900;1,300&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #04070f;
+  --bg2:       #070d1a;
+  --bg3:       #0b1425;
+  --panel:     #0d1830;
+  --panel2:    #0f1e3a;
+  --border:    #1a2f52;
+  --border2:   #243d66;
+  --blue:      #3b82f6;
+  --blue-b:    #60a5fa;
+  --blue-dim:  #1d4ed8;
+  --blue-glow: rgba(59,130,246,0.18);
+  --cyan:      #06b6d4;
+  --cyan-dim:  rgba(6,182,212,0.12);
+  --white:     #e2eeff;
+  --muted:     #4a6080;
+  --muted2:    #2a3f60;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --green:     #10b981;
+  --shadow:    0 8px 32px rgba(0,0,0,0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── PAGE SYSTEM ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════════
+   SHARED NAV
+══════════════════════════════════════════ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  background: rgba(4,7,15,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 5px;
+  color: var(--blue-b);
+  text-shadow: 0 0 24px rgba(96,165,250,0.5);
+  cursor: pointer;
+}
+.nav-logo span { color: var(--muted); font-weight: 300; }
+
+.nav-links { display: flex; gap: 8px; }
+.nav-link {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: none;
+  text-transform: uppercase;
+}
+.nav-link:hover { color: var(--blue-b); border-color: var(--border); }
+.nav-link.active { color: var(--blue-b); border-color: var(--blue-dim); background: rgba(59,130,246,0.08); }
+
+/* ══════════════════════════════════════════
+   HOMEPAGE
+══════════════════════════════════════════ */
+#home { padding-top: 60px; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 60px 24px;
+}
+
+/* Animated grid background */
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridDrift 20s linear infinite;
+}
+@keyframes gridDrift { from { transform: translateY(0); } to { transform: translateY(48px); } }
+
+/* Glowing orb */
+.hero-orb {
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(29,78,216,0.25) 0%, rgba(6,182,212,0.08) 40%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: orbPulse 6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes orbPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+}
+
+.hero-content { position: relative; z-index: 2; text-align: center; max-width: 860px; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--cyan);
+  border: 1px solid rgba(6,182,212,0.3);
+  background: rgba(6,182,212,0.06);
+  padding: 6px 16px; border-radius: 20px;
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+.hero-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: clamp(56px, 10vw, 110px);
+  letter-spacing: 8px;
+  line-height: 0.95;
+  color: var(--white);
+  text-shadow: 0 0 60px rgba(59,130,246,0.35);
+  animation: fadeUp 0.8s 0.1s ease both;
+}
+.hero-title .accent { color: var(--blue-b); display: block; font-size: 0.5em; letter-spacing: 16px; font-weight: 300; margin-top: 8px; }
+
+.hero-sub {
+  margin: 28px auto 0;
+  font-size: 16px; font-weight: 300;
+  color: var(--muted);
+  max-width: 560px; line-height: 1.8;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+
+.hero-cta {
+  margin-top: 48px;
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+
+.btn-primary {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 14px; letter-spacing: 3px;
+  padding: 14px 36px;
+  background: linear-gradient(135deg, var(--blue-dim), var(--blue));
+  border: none; border-radius: 4px;
+  color: #fff; cursor: pointer;
+  box-shadow: 0 4px 24px rgba(59,130,246,0.35);
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.5); }
+
+.btn-secondary {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; font-size: 14px; letter-spacing: 3px;
+  padding: 14px 36px;
+  background: transparent;
+  border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--blue-b); cursor: pointer;
+  transition: all 0.2s; text-transform: uppercase;
+}
+.btn-secondary:hover { background: var(--blue-glow); border-color: var(--blue); transform: translateY(-2px); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll indicator */
+.scroll-hint {
+  position: absolute; bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px;
+  animation: float 2s ease-in-out infinite;
+}
+.scroll-hint svg { animation: bounce 2s ease-in-out infinite; }
+@keyframes float { 0%,100%{opacity:0.5}50%{opacity:1} }
+@keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(6px)} }
+
+/* ABOUT SECTION */
+.section {
+  padding: 100px 24px;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.section-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 4px;
+  color: var(--cyan); margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: 3px; line-height: 1.1;
+  margin-bottom: 20px;
+}
+.section-title .hl { color: var(--blue-b); }
+
+.section-body {
+  font-size: 16px; font-weight: 300; color: var(--muted);
+  line-height: 1.9; max-width: 680px;
+}
+
+/* Project overview cards */
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; margin-top: 56px;
+}
+
+@media (max-width: 700px) { .about-grid { grid-template-columns: 1fr; } }
+
+.about-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 28px;
+  position: relative; overflow: hidden;
+  transition: all 0.3s;
+}
+.about-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.about-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+.about-card:hover::before { opacity: 1; }
+
+.card-icon {
+  font-size: 28px; margin-bottom: 16px;
+  filter: drop-shadow(0 0 8px rgba(59,130,246,0.4));
+}
+.card-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 18px; letter-spacing: 2px;
+  color: var(--white); margin-bottom: 10px;
+}
+.card-text { font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.8; }
+
+/* PARTS SECTION */
+.parts-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.parts-inner { max-width: 1100px; margin: 0 auto; padding: 100px 24px; }
+
+.parts-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px; margin-top: 48px;
+}
+
+.part-chip {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px 16px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: default;
+}
+.part-chip:hover { border-color: var(--blue-dim); background: rgba(59,130,246,0.08); transform: translateY(-2px); }
+.part-icon { font-size: 26px; margin-bottom: 10px; }
+.part-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; font-size: 13px; letter-spacing: 1px;
+  color: var(--blue-b);
+}
+.part-note { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+/* TEAM SECTION */
+.team-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px; margin-top: 56px;
+}
+
+.team-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 32px 28px;
+  text-align: center; position: relative; overflow: hidden;
+  transition: all 0.3s;
+}
+.team-card:hover { border-color: var(--border2); box-shadow: 0 0 40px rgba(59,130,246,0.12); transform: translateY(-4px); }
+
+.team-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 2px solid var(--border2);
+  background: linear-gradient(135deg, var(--panel2), var(--bg3));
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 26px;
+  color: var(--blue-b);
+  box-shadow: 0 0 24px rgba(59,130,246,0.2);
+}
+.team-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 20px; letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.team-role { font-size: 12px; color: var(--cyan); font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
+
+/* FOOTER */
+footer {
+  text-align: center; padding: 40px;
+  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted); letter-spacing: 2px;
+}
+
+/* ══════════════════════════════════════════
+   CONTROLLER PAGE
+══════════════════════════════════════════ */
+#controller {
+  padding-top: 60px;
+  min-height: 100vh;
+}
+
+.ctrl-main {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  padding: 16px;
+  min-height: calc(100vh - 60px);
+}
+
+/* ── Panels ── */
+.c-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.c-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+.c-panel-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 3px; color: var(--muted);
+  text-transform: uppercase;
+}
+.c-panel-actions { display: flex; gap: 6px; align-items: center; }
+
+/* STATUS DOTS */
+.s-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted2); transition: all 0.3s; }
+.s-dot.ok { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+.s-dot.live { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+.s-dot.warn { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+
+/* FEED */
+.feed-wrap {
+  flex: 1; position: relative;
+  background: #000;
+  min-height: 340px;
+  display: flex; align-items: center; justify-content: center;
+}
+.feed-wrap video { width: 100%; height: 100%; object-fit: cover; display: none; }
+.no-signal {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  color: var(--muted2); font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+}
+.no-signal svg { opacity: 0.25; }
+
+.feed-corners .c { position: absolute; width: 20px; height: 20px; }
+.feed-corners .c.tl { top: 10px; left: 10px; border-top: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+.feed-corners .c.tr { top: 10px; right: 10px; border-top: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+.feed-corners .c.bl { bottom: 10px; left: 10px; border-bottom: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+.feed-corners .c.br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+
+.scan-line {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue-b), transparent);
+  animation: scanDown 2.5s ease-in-out infinite; opacity: 0;
+}
+@keyframes scanDown { 0%{top:0;opacity:0}10%{opacity:0.5}90%{opacity:0.5}100%{top:100%;opacity:0} }
+
+.feed-info {
+  position: absolute; bottom: 12px; left: 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(96,165,250,0.7);
+}
+
+.webrtc-bar {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+  background: rgba(0,0,0,0.15);
+}
+
+.cam-tab {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; font-size: 11px; letter-spacing: 2px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  color: var(--muted); cursor: pointer;
+  transition: all 0.2s;
+}
+.cam-tab.active { background: var(--blue-glow); color: var(--blue-b); }
+.cam-tab:hover:not(.active) { color: var(--white); }
+
+.hint-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 1px;
+  padding: 4px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--muted); cursor: pointer;
+  transition: all 0.2s;
+}
+.hint-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+
+.input-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+.input-wrap label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+.input-wrap input {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--blue-b); font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  padding: 7px 12px; border-radius: 4px; outline: none; transition: border-color 0.2s;
+}
+.input-wrap input:focus { border-color: var(--blue-dim); }
+.input-wrap input::placeholder { color: var(--muted2); }
+
+/* ── UI BUTTONS ── */
+.ui-btn {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 11px; letter-spacing: 2px;
+  padding: 8px 16px; border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: transparent; color: var(--blue-b);
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  text-transform: uppercase;
+}
+.ui-btn:hover:not(:disabled) { background: var(--blue-glow); border-color: var(--blue); box-shadow: 0 0 12px rgba(59,130,246,0.2); }
+.ui-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.ui-btn.danger { border-color: #7f1d1d; color: var(--red); }
+.ui-btn.danger:hover:not(:disabled) { background: rgba(239,68,68,0.1); border-color: var(--red); }
+
+/* ── RIGHT COLUMN ── */
+.right-col { display: flex; flex-direction: column; gap: 14px; }
+
+/* BT panel */
+.bt-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.bt-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.bt-row { display: flex; gap: 8px; }
+
+/* ── CONTROLS ── */
+.ctrl-body { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 1; }
+.ctrl-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 3px; color: var(--muted);
+  text-align: center; width: 100%;
+  text-transform: uppercase;
+}
+
+/* ── DPAD ── */
+.dpad {
+  display: grid;
+  grid-template-columns: 64px 64px 64px;
+  grid-template-rows: 64px 64px 64px;
+  gap: 6px;
+}
+
+.dpad-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.12s;
+  position: relative; overflow: hidden;
+  color: var(--blue-b);
+  -webkit-user-select: none; user-select: none;
+}
+
+/* Arrow SVG icons inside dpad */
+.dpad-btn svg { transition: transform 0.12s; pointer-events: none; }
+
+.dpad-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(59,130,246,0.25), transparent 70%);
+  opacity: 0; transition: opacity 0.12s;
+}
+.dpad-btn:hover:not(:disabled)::after { opacity: 1; }
+.dpad-btn:hover:not(:disabled) { border-color: var(--blue-dim); box-shadow: 0 0 16px rgba(59,130,246,0.2); }
+.dpad-btn.pressed, .dpad-btn:active:not(:disabled) {
+  background: rgba(59,130,246,0.2);
+  border-color: var(--blue);
+  box-shadow: 0 0 24px rgba(59,130,246,0.4), inset 0 0 12px rgba(59,130,246,0.15);
+}
+.dpad-btn.pressed svg { transform: scale(0.9); }
+.dpad-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.dpad-empty { visibility: hidden; }
+.dpad-center {
+  background: var(--bg3);
+  border: 1px dashed var(--muted2);
+  border-radius: 10px;
+  pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.dpad-center-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted2); }
+
+/* ── STOP ── */
+.stop-btn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  color: var(--red);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 16px; letter-spacing: 6px;
+  cursor: pointer; transition: all 0.15s;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(239,68,68,0.4);
+}
+.stop-btn:hover:not(:disabled) { background: rgba(239,68,68,0.12); border-color: var(--red); box-shadow: 0 0 24px rgba(239,68,68,0.2); }
+.stop-btn:active:not(:disabled) { transform: scale(0.98); }
+.stop-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+/* ── ROTATE / PAN ── */
+.action-row { display: flex; gap: 8px; width: 100%; }
+.action-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 8px;
+  color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; font-size: 12px; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  -webkit-user-select: none; user-select: none;
+  text-transform: uppercase;
+}
+.action-btn:hover:not(:disabled) { border-color: var(--blue-dim); color: var(--blue-b); background: rgba(59,130,246,0.08); }
+.action-btn.pressed, .action-btn:active:not(:disabled) { background: rgba(59,130,246,0.18); border-color: var(--blue); box-shadow: 0 0 16px rgba(59,130,246,0.25); }
+.action-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.action-btn.cyan { color: var(--cyan); }
+.action-btn.cyan:hover:not(:disabled) { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.08); }
+.action-btn.cyan.pressed, .action-btn.cyan:active:not(:disabled) { background: rgba(6,182,212,0.15); border-color: var(--cyan); box-shadow: 0 0 16px rgba(6,182,212,0.25); }
+
+.divider { width: 100%; height: 1px; background: var(--border); }
+
+/* ── LOG ── */
+.log-body { overflow-y: auto; max-height: 130px; padding: 8px 14px; font-size: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.log-entry { display: flex; gap: 8px; line-height: 1.9; }
+.log-t { color: var(--muted2); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; }
+.log-m { font-family: 'JetBrains Mono', monospace; }
+.log-m.ok { color: var(--green); }
+.log-m.err { color: var(--red); }
+.log-m.info { color: var(--muted); }
+.log-m.warn { color: var(--amber); }
+.log-m.cmd { color: var(--blue-b); }
+
+/* keyboard hints */
+.kb-hints {
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 18px;
+  border-top: 1px solid var(--border); background: rgba(0,0,0,0.15);
+}
+.kb-key {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 3px; padding: 2px 6px; color: var(--muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .ctrl-main { grid-template-columns: 1fr; }
+  .right-col { flex-direction: row; flex-wrap: wrap; }
+  .c-panel { min-width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">RECON<span>-1</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" id="nav-home" onclick="showPage('home')">Home</button>
+    <button class="nav-link" id="nav-controller" onclick="showPage('controller')">Controller</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HOMEPAGE
+══════════════════════════════════════════ -->
+<div id="home" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-orb"></div>
+    <div class="hero-content">
+      <div class="hero-badge">YEAR 10 ENGINEERING PROJECT · 2025</div>
+      <h1 class="hero-title">
+        RECON
+        <span class="accent">SURVEILLANCE ROBOT</span>
+      </h1>
+      <p class="hero-sub">
+        An autonomous-capable surveillance platform built from scratch — featuring real-time video streaming, BBC micro:bit Bluetooth control, mecanum wheel omnidirectional drive, and a pan-capable camera mount.
+      </p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="showPage('controller')">LAUNCH CONTROLLER</button>
+        <button class="btn-secondary" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">LEARN MORE</button>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>SCROLL</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M8 3v10M3 9l5 5 5-5"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="section-tag">// 01 — ABOUT THE PROJECT</div>
+    <h2 class="section-title">Built with <span class="hl">ingenuity</span>,<br>powered by curiosity.</h2>
+    <p class="section-body">
+      RECON-1 is a remotely operated surveillance robot designed and built by a team of Year 10 students. 
+      The goal: create a low-cost, fully functional surveillance platform capable of omnidirectional movement, 
+      live video streaming, and Bluetooth-based control — all from a web browser. Every component was hand-chosen, 
+      every wire hand-soldered, and the chassis was built from popsicle sticks and cardboard.
+    </p>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="card-icon">📡</div>
+        <div class="card-title">BLUETOOTH CONTROL</div>
+        <div class="card-text">The BBC micro:bit broadcasts over Bluetooth Low Energy using the Nordic UART service. Commands are sent from the web controller in real-time, giving the driver precise, low-latency control over all movement.</div>
+      </div>
+      <div class="about-card">
+        <div class="card-icon">📷</div>
+        <div class="card-title">LIVE VIDEO STREAM</div>
+        <div class="card-text">A smartphone mounted on the robot streams live video via WebRTC — the same technology used in Google Meet and video calls. The feed appears directly in the controller interface with virtually zero delay.</div>
+      </div>
+      <div class="about-card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">MECANUM WHEELS</div>
+        <div class="card-text">Mecanum wheels allow the robot to move in any direction — forward, backward, sideways, and diagonal — without rotating the chassis. This omnidirectional drive system makes RECON-1 highly manoeuvrable in tight spaces.</div>
+      </div>
+      <div class="about-card">
+        <div class="card-icon">🎯</div>
+        <div class="card-title">PAN CAMERA MOUNT</div>
+        <div class="card-text">The phone is attached to a servo-driven mount, allowing the camera to pan left and right independently of the robot's movement. This gives the operator a wide field of view without repositioning the entire vehicle.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTS -->
+  <div class="parts-section">
+    <div class="parts-inner">
+      <div class="section-tag">// 02 — COMPONENTS</div>
+      <h2 class="section-title">What's <span class="hl">inside</span></h2>
+      <p class="section-body">Every part was deliberately selected for cost-efficiency and ease of integration — proof that you don't need a big budget to build something impressive.</p>
+      <div class="parts-grid">
+        <div class="part-chip">
+          <div class="part-icon">🧠</div>
+          <div class="part-name">BBC MICRO:BIT</div>
+          <div class="part-note">Main controller</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">🔌</div>
+          <div class="part-name">WUKONG BOARD</div>
+          <div class="part-note">Expansion + power</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">⚡</div>
+          <div class="part-name">L298 DRIVER</div>
+          <div class="part-note">Motor control</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">🔄</div>
+          <div class="part-name">TT MOTORS</div>
+          <div class="part-note">DC drive motors</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">🎡</div>
+          <div class="part-name">MECANUM WHEELS</div>
+          <div class="part-note">Omni-directional</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">📱</div>
+          <div class="part-name">SMARTPHONE</div>
+          <div class="part-note">Live camera feed</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">🔩</div>
+          <div class="part-name">SERVO MOTOR</div>
+          <div class="part-note">Camera pan</div>
+        </div>
+        <div class="part-chip">
+          <div class="part-icon">🪵</div>
+          <div class="part-name">POPSICLE STICKS</div>
+          <div class="part-note">Custom chassis</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <section class="section" id="team">
+    <div class="section-tag">// 03 — THE TEAM</div>
+    <h2 class="section-title">The <span class="hl">builders</span></h2>
+    <p class="section-body">Three Year 10 students. One shared vision. RECON-1 is the result of late nights, creative problem-solving, and a lot of hot glue.</p>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">ZS</div>
+        <div class="team-name">ZARIF SHAYAAN</div>
+        <div class="team-role">// Lead Developer</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">RS</div>
+        <div class="team-name">RAYAN SHAHU</div>
+        <div class="team-role">// Hardware Engineer</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">IT</div>
+        <div class="team-name">IBRAHIM TAYYAB</div>
+        <div class="team-role">// Systems Integrator</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    RECON-1 &nbsp;·&nbsp; YEAR 10 PROJECT &nbsp;·&nbsp; ZARIF SHAYAAN · RAYAN SHAHU · IBRAHIM TAYYAB
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CONTROLLER PAGE
+══════════════════════════════════════════ -->
+<div id="controller" class="page">
+  <div class="ctrl-main">
+
+    <!-- CAMERA FEED -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="c-panel" style="flex:1;display:flex;flex-direction:column;">
+        <div class="c-panel-header">
+          <span class="c-panel-title">// Live Surveillance Feed</span>
+          <div class="c-panel-actions">
+            <div class="s-dot" id="recDot" title="Recording"></div>
+            <span id="recLabel" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;">OFFLINE</span>
+          </div>
+        </div>
+        <div class="feed-wrap" id="feedWrap">
+          <video id="remoteVideo" autoplay playsinline muted></video>
+          <div class="no-signal" id="noSignal">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="2" y="6" width="16" height="12" rx="1"/>
+              <path d="M18 10l4-2v8l-4-2"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+            NO SIGNAL
+          </div>
+          <div class="scan-line" id="scanLine" style="display:none"></div>
+          <div class="feed-corners">
+            <div class="c tl"></div><div class="c tr"></div>
+            <div class="c bl"></div><div class="c br"></div>
+          </div>
+          <div class="feed-info" id="feedInfo"></div>
+        </div>
+        <!-- Connection bar -->
+        <div class="webrtc-bar" style="flex-direction:column;gap:8px;">
+          <!-- Tab switcher -->
+          <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;align-self:flex-start;">
+            <button class="cam-tab active" id="tab-ip" onclick="switchCamTab('ip')">📷 IP WEBCAM</button>
+            <button class="cam-tab" id="tab-rtc" onclick="switchCamTab('rtc')">⚡ WEBRTC</button>
+          </div>
+
+          <!-- IP Webcam panel -->
+          <div id="panel-ip" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;width:100%;">
+            <div class="input-wrap" style="flex:1;min-width:180px;">
+              <label>STREAM URL (MJPEG / HLS / SNAPSHOT)</label>
+              <input type="text" id="ipUrl" placeholder="http://192.168.x.x:8080/video" value=""/>
+            </div>
+            <div class="input-wrap" style="width:120px;">
+              <label>MODE</label>
+              <select id="ipMode" style="background:var(--bg3);border:1px solid var(--border);color:var(--blue-b);font-family:'JetBrains Mono',monospace;font-size:11px;padding:7px 10px;border-radius:4px;outline:none;">
+                <option value="mjpeg">MJPEG</option>
+                <option value="hls">HLS (.m3u8)</option>
+                <option value="snapshot">Snapshot (auto-refresh)</option>
+              </select>
+            </div>
+            <button class="ui-btn" id="ipConnBtn" onclick="connectIPCam()">CONNECT</button>
+            <button class="ui-btn danger" id="ipDiscBtn" onclick="disconnectIPCam()" disabled>DISC.</button>
+          </div>
+
+          <!-- WebRTC panel -->
+          <div id="panel-rtc" style="display:none;gap:10px;align-items:flex-end;flex-wrap:wrap;width:100%;">
+            <div class="input-wrap" style="flex:1;min-width:150px;">
+              <label>SIGNALING SERVER (WS)</label>
+              <input type="text" id="sigUrl" placeholder="ws://192.168.x.x:8080" value="ws://localhost:8080"/>
+            </div>
+            <button class="ui-btn" id="camConnBtn" onclick="connectCamera()">CONNECT CAM</button>
+            <button class="ui-btn danger" id="camDiscBtn" onclick="disconnectCamera()" disabled>DISC.</button>
+          </div>
+
+          <!-- Quick-fill helpers for common apps -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;" id="ip-hints">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;">QUICK FILL:</span>
+            <button class="hint-btn" onclick="fillIPHint('mjpeg','video')">IP Webcam App (MJPEG)</button>
+            <button class="hint-btn" onclick="fillIPHint('snapshot','shot.jpg')">IP Webcam App (Snapshot)</button>
+            <button class="hint-btn" onclick="fillIPHint('hls','stream/channel0')">Reolink / RTSP-HLS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="c-panel">
+        <div class="c-panel-header"><span class="c-panel-title">// Command Log</span></div>
+        <div class="log-body" id="log"></div>
+        <div class="kb-hints">
+          <span class="kb-key">↑ W — forward</span>
+          <span class="kb-key">↓ S — backward</span>
+          <span class="kb-key">← A — left</span>
+          <span class="kb-key">→ D — right</span>
+          <span class="kb-key">Q — rot left</span>
+          <span class="kb-key">E — rot right</span>
+          <span class="kb-key">Z — pan left</span>
+          <span class="kb-key">C — pan right</span>
+          <span class="kb-key">Space — stop</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- BLUETOOTH -->
+      <div class="c-panel">
+        <div class="c-panel-header">
+          <span class="c-panel-title">// Micro:bit Bluetooth</span>
+          <div class="s-dot" id="btDot"></div>
+        </div>
+        <div class="bt-body">
+          <div class="bt-status"><div class="s-dot" id="btDot2"></div><span id="btText">Not connected</span></div>
+          <div class="bt-row">
+            <button class="ui-btn" id="btConnBtn" onclick="connectBluetooth()" style="flex:1">PAIR DEVICE</button>
+            <button class="ui-btn danger" id="btDiscBtn" onclick="disconnectBluetooth()" disabled>DROP</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.7;font-family:'JetBrains Mono',monospace;">
+            Requires Nordic UART service.<br>Enable BT on micro:bit first.
+          </div>
+        </div>
+      </div>
+
+      <!-- DRIVE CONTROLS -->
+      <div class="c-panel" style="flex:1;display:flex;flex-direction:column;">
+        <div class="c-panel-header"><span class="c-panel-title">// Drive Controls</span></div>
+        <div class="ctrl-body">
+
+          <div class="ctrl-section-label">Movement</div>
+
+          <!-- DPAD -->
+          <div class="dpad">
+            <!-- Row 1 -->
+            <div class="dpad-empty"></div>
+            <button class="dpad-btn" id="btn-up" data-cmd="up" disabled title="Forward (W/↑)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="dpad-empty"></div>
+            <!-- Row 2 -->
+            <button class="dpad-btn" id="btn-left" data-cmd="left" disabled title="Left (A/←)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="dpad-center"><div class="dpad-center-dot"></div></div>
+            <button class="dpad-btn" id="btn-right" data-cmd="right" disabled title="Right (D/→)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 19l7-7-7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <!-- Row 3 -->
+            <div class="dpad-empty"></div>
+            <button class="dpad-btn" id="btn-down" data-cmd="down" disabled title="Backward (S/↓)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M19 12l-7 7-7-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="dpad-empty"></div>
+          </div>
+
+          <!-- STOP -->
+          <button class="stop-btn" id="btn-stop" disabled onclick="sendCmd('stop')">■ &nbsp; STOP</button>
+
+          <div class="divider"></div>
+
+          <!-- ROTATE -->
+          <div class="ctrl-section-label">Rotate in Place</div>
+          <div class="action-row">
+            <button class="action-btn" id="btn-rotateleft" data-cmd="rotateleft" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              ROT LEFT
+            </button>
+            <button class="action-btn" id="btn-rotateright" data-cmd="rotateright" disabled>
+              ROT RIGHT
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- PAN -->
+          <div class="ctrl-section-label">Camera Pan (Servo)</div>
+          <div class="action-row">
+            <button class="action-btn cyan" id="btn-panleft" data-cmd="panleft" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              PAN LEFT
+            </button>
+            <button class="action-btn cyan" id="btn-panright" data-cmd="panright" disabled>
+              PAN RIGHT
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 19l7-7-7-7"/></svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// PAGE ROUTING
+// ══════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('nav-' + id).classList.add('active');
+}
+
+// ══════════════════════════════════════
+// LOGGING
+// ══════════════════════════════════════
+function log(msg, type = 'info') {
+  const el = document.getElementById('log');
+  const now = new Date();
+  const t = [now.getHours(), now.getMinutes(), now.getSeconds()]
+    .map(n => n.toString().padStart(2, '0')).join(':');
+  const d = document.createElement('div');
+  d.className = 'log-entry';
+  d.innerHTML = `<span class="log-t">[${t}]</span><span class="log-m ${type}">${msg}</span>`;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ══════════════════════════════════════
+// BLUETOOTH
+// ══════════════════════════════════════
+let btDevice = null, btChar = null;
+
+async function connectBluetooth() {
+  try {
+    log('Scanning for micro:bit...', 'info');
+    btDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'BBC micro:bit' }],
+      optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
+    });
+    btDevice.addEventListener('gattserverdisconnected', onBtDisc);
+    const server = await btDevice.gatt.connect();
+    const svc = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+    btChar = await svc.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+    setBtState(true);
+    log(`Connected: ${btDevice.name}`, 'ok');
+  } catch (e) {
+    log(`BT Error: ${e.message}`, 'err');
+    setBtState(false);
+  }
+}
+
+function disconnectBluetooth() {
+  if (btDevice?.gatt?.connected) btDevice.gatt.disconnect();
+}
+
+function onBtDisc() {
+  setBtState(false);
+  log('Bluetooth disconnected', 'warn');
+}
+
+function setBtState(on) {
+  [document.getElementById('btDot'), document.getElementById('btDot2')].forEach(d => {
+    if (d) { d.className = 's-dot'; if (on) d.classList.add('ok'); }
+  });
+  document.getElementById('btText').textContent = on ? `Connected: ${btDevice?.name ?? 'micro:bit'}` : 'Not connected';
+  document.getElementById('btConnBtn').disabled = on;
+  document.getElementById('btDiscBtn').disabled = !on;
+  document.querySelectorAll('[data-cmd]').forEach(b => b.disabled = !on);
+}
+
+async function sendCmd(cmd) {
+  if (!btChar) { log('Not connected!', 'err'); return; }
+  try {
+    await btChar.writeValue(new TextEncoder().encode(cmd + '\n'));
+    log(`→ ${cmd}`, 'cmd');
+  } catch (e) {
+    log(`Send failed: ${e.message}`, 'err');
+  }
+}
+
+// ══════════════════════════════════════
+// BUTTON WIRING
+// Hold-to-drive: sends cmd on press, sends stop on release
+// Click-only: stop button
+// ══════════════════════════════════════
+const holdCmds = ['up','down','left','right','rotateleft','rotateright'];
+const panCmds  = ['panleft','panright'];
+
+document.querySelectorAll('[data-cmd]').forEach(btn => {
+  const cmd = btn.dataset.cmd;
+
+  if (cmd === 'stop') return; // wired via onclick
+
+  if (holdCmds.includes(cmd) || panCmds.includes(cmd)) {
+    const stopCmd = panCmds.includes(cmd) ? 'panstop' : 'stop';
+
+    const down = e => { e.preventDefault(); btn.classList.add('pressed'); sendCmd(cmd); };
+    const up   = e => { e.preventDefault(); btn.classList.remove('pressed'); sendCmd(stopCmd); };
+
+    btn.addEventListener('mousedown', down);
+    btn.addEventListener('mouseup', up);
+    btn.addEventListener('mouseleave', e => { if (btn.classList.contains('pressed')) up(e); });
+    btn.addEventListener('touchstart', down, { passive: false });
+    btn.addEventListener('touchend',   up,   { passive: false });
+    btn.addEventListener('touchcancel',up,   { passive: false });
+  }
+});
+
+// ── Keyboard ──
+const keyMap = {
+  'ArrowUp':'up','ArrowDown':'down','ArrowLeft':'panleft','ArrowRight':'panright',
+  'w':'up','s':'down','a':'left','d':'right',
+  ' ':'stop',
+  'q':'rotateleft','e':'rotateright',
+  'z':'panleft','c':'panright'
+};
+const keysHeld = new Set();
+
+document.addEventListener('keydown', e => {
+  if (e.repeat || !btChar) return;
+  const cmd = keyMap[e.key];
+  if (!cmd) return;
+  e.preventDefault();
+  if (keysHeld.has(e.key)) return;
+  keysHeld.add(e.key);
+  const btn = document.querySelector(`[data-cmd="${cmd}"]`);
+  if (btn) btn.classList.add('pressed');
+  sendCmd(cmd);
+});
+
+document.addEventListener('keyup', e => {
+  const cmd = keyMap[e.key];
+  if (!cmd) return;
+  keysHeld.delete(e.key);
+  const btn = document.querySelector(`[data-cmd="${cmd}"]`);
+  if (btn) btn.classList.remove('pressed');
+  if (holdCmds.includes(cmd)) sendCmd('stop');
+  else if (panCmds.includes(cmd)) sendCmd('panstop');
+});
+
+// ══════════════════════════════════════
+// CAM TAB SWITCHER
+// ══════════════════════════════════════
+function switchCamTab(tab) {
+  document.getElementById('tab-ip').classList.toggle('active', tab === 'ip');
+  document.getElementById('tab-rtc').classList.toggle('active', tab === 'rtc');
+  document.getElementById('panel-ip').style.display = tab === 'ip' ? 'flex' : 'none';
+  document.getElementById('panel-rtc').style.display = tab === 'rtc' ? 'flex' : 'none';
+  document.getElementById('ip-hints').style.display = tab === 'ip' ? 'flex' : 'none';
+}
+
+function fillIPHint(mode, path) {
+  const base = document.getElementById('ipUrl').value.trim();
+  // Extract host from existing URL or use placeholder
+  let host = '192.168.1.x:8080';
+  try { const u = new URL(base); host = u.host; } catch(e) {}
+  document.getElementById('ipUrl').value = `http://${host}/${path}`;
+  document.getElementById('ipMode').value = mode;
+}
+
+// ══════════════════════════════════════
+// IP WEBCAM
+// ══════════════════════════════════════
+let snapshotInterval = null;
+let hlsPlayer = null;
+
+async function connectIPCam() {
+  const url  = document.getElementById('ipUrl').value.trim();
+  const mode = document.getElementById('ipMode').value;
+  if (!url) { log('Enter stream URL', 'warn'); return; }
+
+  disconnectIPCam(false); // clean up previous
+
+  const vid   = document.getElementById('remoteVideo');
+  const img   = getOrCreateIPImg();
+  const noSig = document.getElementById('noSignal');
+
+  document.getElementById('ipConnBtn').disabled = true;
+  document.getElementById('scanLine').style.display = 'block';
+  log(`Connecting IP cam [${mode}]: ${url}`, 'info');
+
+  if (mode === 'mjpeg') {
+    // MJPEG: just set <img> src — browser streams it natively
+    vid.style.display = 'none';
+    img.style.display = 'block';
+    noSig.style.display = 'none';
+    img.onerror = () => { log('MJPEG stream error — check URL & CORS', 'err'); onIPDisc(); };
+    img.onload  = () => {}; // fires per-frame; handled by onerror absence
+    img.src = url;
+    setIPLive(true);
+    log('MJPEG stream active', 'ok');
+
+  } else if (mode === 'snapshot') {
+    // Snapshot: poll every 250 ms
+    img.style.display = 'block';
+    vid.style.display = 'none';
+    noSig.style.display = 'none';
+    setIPLive(true);
+    log('Snapshot polling active (4 fps)', 'ok');
+    const refresh = () => { img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now(); };
+    refresh();
+    snapshotInterval = setInterval(refresh, 250);
+
+  } else if (mode === 'hls') {
+    // HLS via hls.js CDN or native if supported
+    img.style.display = 'none';
+    vid.style.display = 'block';
+    noSig.style.display = 'none';
+    if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+      vid.src = url;
+      vid.play().catch(()=>{});
+      setIPLive(true);
+      log('HLS native playback active', 'ok');
+    } else {
+      // Dynamically load hls.js
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js';
+      s.onload = () => {
+        if (Hls.isSupported()) {
+          hlsPlayer = new Hls();
+          hlsPlayer.loadSource(url);
+          hlsPlayer.attachMedia(vid);
+          hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => { vid.play(); setIPLive(true); log('HLS stream active', 'ok'); });
+          hlsPlayer.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) { log('HLS error: ' + d.details, 'err'); onIPDisc(); } });
+        } else { log('HLS not supported in this browser', 'err'); onIPDisc(); }
+      };
+      s.onerror = () => { log('Failed to load hls.js', 'err'); onIPDisc(); };
+      document.head.appendChild(s);
+    }
+  }
+  document.getElementById('ipDiscBtn').disabled = false;
+}
+
+function disconnectIPCam(updateUI = true) {
+  clearInterval(snapshotInterval); snapshotInterval = null;
+  if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
+  const img = document.getElementById('ipImg');
+  if (img) { img.src = ''; img.style.display = 'none'; }
+  const vid = document.getElementById('remoteVideo');
+  vid.style.display = 'none'; vid.src = '';
+  if (updateUI) onIPDisc();
+}
+
+function onIPDisc() {
+  document.getElementById('noSignal').style.display = 'flex';
+  document.getElementById('scanLine').style.display = 'none';
+  document.getElementById('recDot').className = 's-dot';
+  document.getElementById('recLabel').textContent = 'OFFLINE';
+  document.getElementById('feedInfo').textContent = '';
+  document.getElementById('ipConnBtn').disabled = false;
+  document.getElementById('ipDiscBtn').disabled = true;
+}
+
+function setIPLive(on) {
+  document.getElementById('noSignal').style.display = on ? 'none' : 'flex';
+  document.getElementById('scanLine').style.display  = on ? 'block' : 'none';
+  document.getElementById('recDot').className = on ? 's-dot live' : 's-dot';
+  document.getElementById('recLabel').textContent = on ? 'LIVE' : 'OFFLINE';
+  document.getElementById('feedInfo').textContent = on ? `IP CAM · ${new Date().toLocaleTimeString()}` : '';
+}
+
+function getOrCreateIPImg() {
+  let img = document.getElementById('ipImg');
+  if (!img) {
+    img = document.createElement('img');
+    img.id = 'ipImg';
+    img.style.cssText = 'display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;';
+    document.getElementById('feedWrap').appendChild(img);
+  }
+  return img;
+}
+
+// ══════════════════════════════════════
+// WEBRTC CAMERA
+// ══════════════════════════════════════
+let pc = null, ws = null;
+
+async function connectCamera() {
+  const url = document.getElementById('sigUrl').value.trim();
+  if (!url) { log('Enter signaling server URL', 'warn'); return; }
+  log(`Connecting to: ${url}`, 'info');
+  document.getElementById('camConnBtn').disabled = true;
+  document.getElementById('scanLine').style.display = 'block';
+
+  try {
+    ws = new WebSocket(url);
+    ws.onopen = async () => {
+      log('Signaling connected', 'ok');
+      pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      pc.ontrack = e => {
+        const v = document.getElementById('remoteVideo');
+        v.srcObject = e.streams[0];
+        v.style.display = 'block';
+        document.getElementById('noSignal').style.display = 'none';
+        document.getElementById('recDot').className = 's-dot live';
+        document.getElementById('recLabel').textContent = 'LIVE';
+        document.getElementById('feedInfo').textContent = `STREAM · ${new Date().toLocaleTimeString()}`;
+        log('Video stream active', 'ok');
+      };
+      pc.onicecandidate = e => {
+        if (e.candidate && ws.readyState === WebSocket.OPEN)
+          ws.send(JSON.stringify({ type: 'ice', candidate: e.candidate }));
+      };
+      pc.onconnectionstatechange = () => {
+        log(`Peer: ${pc.connectionState}`, 'info');
+        if (pc.connectionState === 'failed') onCamDisc();
+      };
+      const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: false });
+      await pc.setLocalDescription(offer);
+      ws.send(JSON.stringify({ type: 'offer', sdp: offer }));
+      log('Offer sent', 'info');
+    };
+    ws.onmessage = async e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'answer') {
+        await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        log('Answer received', 'ok');
+      } else if (msg.type === 'ice') {
+        try { await pc.addIceCandidate(new RTCIceCandidate(msg.candidate)); } catch(err){}
+      }
+    };
+    ws.onerror = () => { log('WebSocket error', 'err'); onCamDisc(); };
+    ws.onclose = () => { log('WebSocket closed', 'warn'); onCamDisc(); };
+    document.getElementById('camDiscBtn').disabled = false;
+  } catch(e) {
+    log(`Camera error: ${e.message}`, 'err');
+    onCamDisc();
+  }
+}
+
+function disconnectCamera() {
+  pc?.close(); pc = null;
+  ws?.close(); ws = null;
+  onCamDisc();
+}
+
+function onCamDisc() {
+  const v = document.getElementById('remoteVideo');
+  v.style.display = 'none'; v.srcObject = null;
+  document.getElementById('noSignal').style.display = 'flex';
+  document.getElementById('scanLine').style.display = 'none';
+  document.getElementById('recDot').className = 's-dot';
+  document.getElementById('recLabel').textContent = 'OFFLINE';
+  document.getElementById('feedInfo').textContent = '';
+  document.getElementById('camConnBtn').disabled = false;
+  document.getElementById('camDiscBtn').disabled = true;
+}
+
+// ── Init log ──
+log('RECON-1 controller ready', 'ok');
+log('Pair micro:bit to enable controls', 'info');
+log('Keyboard: WASD move · Q/E rotate · ←/→ arrows or Z/C pan · Space stop', 'info');
+</script>
+</body>
+</html>
